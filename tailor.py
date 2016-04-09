@@ -6,18 +6,22 @@ import os
 import sys
 import os.path
 from os.path import expanduser
-import sys, tty
+import tty
 import termios
+import shutil
 
-
+VERSION = "0.1"
 CONFIGFILE = expanduser("~")+"/.tailor"
-TAILCMD = "tail"
-TAILPARAMS = "-F"
+TAILCMD = "tail -F"
+KEYS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 HISTORY = []
+HISTORYMAX = len(KEYS)
+
 
 if os.name == "nt":
     print("Sorry, no Win support.")
     exit(1)
+
 
 def _getch():
     fd = sys.stdin.fileno()
@@ -30,7 +34,7 @@ def _getch():
     return ch
 
 
-def read_history():
+def read_history_from_file():
     global HISTORY
     if not os.path.isfile(CONFIGFILE):
         return
@@ -40,7 +44,7 @@ def read_history():
         HISTORY[i] = HISTORY[i].rstrip('\n')
 
 
-def save_history():
+def save_history_to_file():
     outfile = open(CONFIGFILE, 'w')
     outfile.write("\n".join(HISTORY))
     outfile.close()
@@ -48,32 +52,47 @@ def save_history():
 
 def add_to_history(logfile):
     global HISTORY
-    print(HISTORY)
-    for i in range(len(HISTORY)-1,-1,-1):
+    for i in range(len(HISTORY)-1, -1, -1):   # remove duplicates
         if HISTORY[i] == logfile:
             del HISTORY[i]
             print("DEL:"+str(i+1))
     HISTORY.insert(0, logfile)
+    if len(HISTORY) > HISTORYMAX:           # remove last
+        HISTORY = HISTORY[0:HISTORYMAX]
+    print(HISTORY)
+    print(len(HISTORY))
 
 
 def tail_file(logfile):
     add_to_history(logfile)
-    save_history()
-    # print(TAILCOMMAND+" "+logfile)
-    # call([TAILCMD, TAILPARAMS+" "+logfile])
-    os.system(TAILCMD+" "+TAILPARAMS+" "+logfile)
+    save_history_to_file()
+    os.system(TAILCMD+" "+logfile)
 
 
 #########################################
-def mode_history():
-    for i in range(0, len(HISTORY)):
-        print("["+str(i)+"] "+HISTORY[i])
+def mode_help():
+    print("Help")
+    pass
 
-    while True:
+
+def mode_history():
+    (terminal_col, terminal_lines) = shutil.get_terminal_size(fallback=(80, 25))
+    maxlines = min(len(HISTORY), terminal_lines-1)
+    if maxlines <= 0:
+        print("Error: No files in history yet or your terminal has too few lines.")
+        mode_help()
+        exit(0)
+
+    for i in range(0, maxlines):      # print numbered menu
+        print("["+KEYS[i]+"] "+HISTORY[i])
+
+    while True:                             # read user choice
         choice = _getch()
-        choice = int(choice)
-        if (choice >= 0 and choice < len(HISTORY)):
-            logfile = HISTORY[choice]
+        if choice == '\x03':                # CTRL+C ^C
+            exit(0)
+        choiceindex = KEYS.find(choice)
+        if 0 <= choiceindex < len(HISTORY):
+            logfile = HISTORY[choiceindex]
             tail_file(logfile)
             break
 
@@ -86,14 +105,14 @@ def mode_files():
 
 
 # -------- MAIN ---------------
-read_history()
+read_history_from_file()
 
 if len(sys.argv) == 1:
     mode_history()
-    exit (0)
+    exit(0)
 
 if len(sys.argv) == 2 and (sys.argv[1] == "-h" or sys.argv[1] == "--help"):
-    print("Help!")
+    mode_help()
     exit(0)
 
 mode_files()
