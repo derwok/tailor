@@ -1,6 +1,11 @@
 # tailor
 A wrapper for ```tail -F``` that keeps a list of the last used files and allows to chose via simple menu
 
+## Further Features
+* Respects terminal width & height (but only once at launch time! Not dynamically)
+* If access to file is not granted, tries to 'sudo tail -F'
+* Sorts last used file to top of list
+
 ## Usage
 ### tailor [-h | --help]
 Show help
@@ -22,7 +27,3 @@ Example:
     [2] /var/log/apache2/error.log
     [3] /var/log/supervisor/supervisord.log
 
-## Further Features
-* Respects terminal width & height (but only once at launch time! Not dynamically)
-* If access to file is not granted, tries to 'sudo tail -F'
-* Sorts last used file to top of list
