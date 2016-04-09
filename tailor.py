@@ -62,8 +62,6 @@ def add_to_history(logfile):
     HISTORY.insert(0, logfile)
     if len(HISTORY) > HISTORYMAX:           # shorten list
         HISTORY = HISTORY[0:HISTORYMAX]
-    print(HISTORY)
-    print(len(HISTORY))
 
 
 def trim_to_col(line, terminal_col):
