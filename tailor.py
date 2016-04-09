@@ -14,8 +14,8 @@ VERSION = "0.1"
 CONFIGFILE = expanduser("~")+"/.tailor"
 TAILCMD = "tail -F"
 KEYS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-HISTORY = []
 HISTORYMAX = len(KEYS)
+HISTORY = []
 
 
 if os.name == "nt":
@@ -23,6 +23,7 @@ if os.name == "nt":
     exit(1)
 
 
+# Read a single key from keyboard
 def _getch():
     fd = sys.stdin.fileno()
     old_settings = termios.tcgetattr(fd)
@@ -52,24 +53,25 @@ def save_history_to_file():
 
 def add_to_history(logfile):
     global HISTORY
-    for i in range(len(HISTORY)-1, -1, -1):   # remove duplicates
+    for i in range(len(HISTORY)-1, -1, -1):   # remove old duplicates
         if HISTORY[i] == logfile:
             del HISTORY[i]
             print("DEL:"+str(i+1))
     HISTORY.insert(0, logfile)
-    if len(HISTORY) > HISTORYMAX:           # remove last
+    if len(HISTORY) > HISTORYMAX:           # shorten list
         HISTORY = HISTORY[0:HISTORYMAX]
     print(HISTORY)
     print(len(HISTORY))
 
 
+# Do actual work aof calling TAILCMD
 def tail_file(logfile):
     add_to_history(logfile)
     save_history_to_file()
     os.system(TAILCMD+" "+logfile)
 
 
-#########################################
+######################################### MODE-OF-WORK #############################
 def mode_help():
     print("tailor "+VERSION+" (C) by Wolfram M. Esser (DerWOK)")
     print("Usage: tailor [file]")
