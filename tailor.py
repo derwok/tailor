@@ -87,7 +87,11 @@ def print_history_menu(maxlines, terminal_col):
 def tail_file(logfile):
     add_to_history(logfile)
     save_history_to_file()
-    os.system(TAILCMD+" "+logfile)
+    if os.access(logfile, os.R_OK):
+        os.system(TAILCMD+" "+logfile)
+    else:
+        os.system("sudo "+TAILCMD+" "+logfile)
+
 
 
 ######################################### WORK MODES #############################
