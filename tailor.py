@@ -71,17 +71,20 @@ def tail_file(logfile):
 
 #########################################
 def mode_help():
-    print("Help")
-    pass
+    print("tailor "+VERSION+" (C) by Wolfram M. Esser (DerWOK)")
+    print("Usage: tailor [file]")
+    print("If called with file parameter, hands over this file to "+TAILCMD)
+    print("If called without file parameter presents a last-recently-used menu.")
+    print("Press menu letter to hand over this file to "+TAILCMD)
+    exit(0)
 
 
-def mode_history():
+def mode_history_menu():
     (terminal_col, terminal_lines) = shutil.get_terminal_size(fallback=(80, 25))
     maxlines = min(len(HISTORY), terminal_lines-1)
     if maxlines <= 0:
         print("Error: No files in history yet or your terminal has too few lines.")
         mode_help()
-        exit(0)
 
     for i in range(0, maxlines):      # print numbered menu
         print("["+KEYS[i]+"] "+HISTORY[i])
@@ -95,24 +98,24 @@ def mode_history():
             logfile = HISTORY[choiceindex]
             tail_file(logfile)
             break
+    exit(0)
 
 
-def mode_files():
+def mode_new_file():
     logfile = sys.argv[1]
     if os.path.isfile(logfile):
         logfile = os.path.abspath(logfile)
         tail_file(logfile)
+    exit(0)
 
 
 # -------- MAIN ---------------
 read_history_from_file()
 
 if len(sys.argv) == 1:
-    mode_history()
-    exit(0)
+    mode_history_menu()
 
 if len(sys.argv) == 2 and (sys.argv[1] == "-h" or sys.argv[1] == "--help"):
     mode_help()
-    exit(0)
 
-mode_files()
+mode_new_file()
