@@ -9,6 +9,8 @@ from os.path import expanduser
 import tty
 import termios
 import shutil
+import signal
+import time
 
 VERSION = "0.1"
 CONFIGFILE = expanduser("~")+"/.tailor"
@@ -64,14 +66,31 @@ def add_to_history(logfile):
     print(len(HISTORY))
 
 
-# Do actual work aof calling TAILCMD
+def trim_to_col(line, terminal_col):
+    choice_width = 4+1        # [x]_ before every line plus 1 space at end
+    if len(line)+choice_width < terminal_col:
+        return line
+    shortened = "..."+line[-(terminal_col-choice_width-3):]
+    return shortened
+
+
+def print_history_menu(maxlines, terminal_col):
+    if maxlines <= 0:
+        print("Error: No files in history yet or your terminal has too few lines.")
+        mode_help()
+
+    for i in range(0, maxlines):      # print numbered menu
+        print("["+KEYS[i]+"] "+trim_to_col(HISTORY[i], terminal_col))
+
+
+# Do actual work of calling TAILCMD
 def tail_file(logfile):
     add_to_history(logfile)
     save_history_to_file()
     os.system(TAILCMD+" "+logfile)
 
 
-######################################### MODE-OF-WORK #############################
+######################################### WORK MODES #############################
 def mode_help():
     print("tailor "+VERSION+" (C) by Wolfram M. Esser (DerWOK)")
     print("Usage: tailor [file]")
@@ -84,12 +103,8 @@ def mode_help():
 def mode_history_menu():
     (terminal_col, terminal_lines) = shutil.get_terminal_size(fallback=(80, 25))
     maxlines = min(len(HISTORY), terminal_lines-1)
-    if maxlines <= 0:
-        print("Error: No files in history yet or your terminal has too few lines.")
-        mode_help()
-
-    for i in range(0, maxlines):      # print numbered menu
-        print("["+KEYS[i]+"] "+HISTORY[i])
+    print_history_menu(maxlines, terminal_col)
+    signal.signal(signal.SIGWINCH, handle_terminal_resize)
 
     while True:                             # read user choice
         choice = _getch()
@@ -109,6 +124,15 @@ def mode_new_file():
         logfile = os.path.abspath(logfile)
         tail_file(logfile)
     exit(0)
+
+
+############### SIGNAL HANDLERS ######################
+def handle_terminal_resize(param1, param2):
+    (terminal_col, terminal_lines) = shutil.get_terminal_size(fallback=(80, 25))
+    maxlines = min(len(HISTORY), terminal_lines-1)
+    print_history_menu(maxlines, terminal_col)
+
+    # print("Resize ", terminal_col, " ", terminal_lines)
 
 
 # -------- MAIN ---------------
