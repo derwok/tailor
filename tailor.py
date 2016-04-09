@@ -104,7 +104,7 @@ def mode_history_menu():
     (terminal_col, terminal_lines) = shutil.get_terminal_size(fallback=(80, 25))
     maxlines = min(len(HISTORY), terminal_lines-1)
     print_history_menu(maxlines, terminal_col)
-    signal.signal(signal.SIGWINCH, handle_terminal_resize)
+    # signal.signal(signal.SIGWINCH, handle_terminal_resize)
 
     while True:                             # read user choice
         choice = _getch()
@@ -127,12 +127,10 @@ def mode_new_file():
 
 
 ############### SIGNAL HANDLERS ######################
-def handle_terminal_resize(param1, param2):
-    (terminal_col, terminal_lines) = shutil.get_terminal_size(fallback=(80, 25))
-    maxlines = min(len(HISTORY), terminal_lines-1)
-    print_history_menu(maxlines, terminal_col)
-
-    # print("Resize ", terminal_col, " ", terminal_lines)
+# def handle_terminal_resize(param1, param2):
+#     (terminal_col, terminal_lines) = shutil.get_terminal_size(fallback=(80, 25))
+#     maxlines = min(len(HISTORY), terminal_lines-1)
+#     print_history_menu(maxlines, terminal_col)
 
 
 # -------- MAIN ---------------
