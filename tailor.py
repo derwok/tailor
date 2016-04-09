@@ -12,7 +12,7 @@ import shutil
 import signal
 import time
 
-VERSION = "0.1"
+VERSION = "0.2"
 CONFIGFILE = expanduser("~")+"/.tailor"
 TAILCMD = "tail -F"
 KEYS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
