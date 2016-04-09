@@ -12,7 +12,7 @@ import shutil
 import signal
 import time
 
-VERSION = "0.2"
+VERSION = "0.3"
 CONFIGFILE = expanduser("~")+"/.tailor"
 TAILCMD = "tail -F"
 KEYS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -58,7 +58,6 @@ def add_to_history(logfile):
     for i in range(len(HISTORY)-1, -1, -1):   # remove old duplicates
         if HISTORY[i] == logfile:
             del HISTORY[i]
-            print("DEL:"+str(i+1))
     HISTORY.insert(0, logfile)
     if len(HISTORY) > HISTORYMAX:           # shorten list
         HISTORY = HISTORY[0:HISTORYMAX]
@@ -72,7 +71,9 @@ def trim_to_col(line, terminal_col):
     return shortened
 
 
-def print_history_menu(maxlines, terminal_col):
+def print_history_menu():
+    (terminal_col, terminal_lines) = shutil.get_terminal_size(fallback=(80, 25))
+    maxlines = min(len(HISTORY), terminal_lines-1)
     if maxlines <= 0:
         print("Error: No files in history yet or your terminal has too few lines.")
         mode_help()
@@ -99,25 +100,45 @@ def mode_help():
     print("If called with file parameter, hands over this file to "+TAILCMD)
     print("If called without file parameter presents a last-recently-used menu.")
     print("Press menu letter to hand over this file to "+TAILCMD)
+    print("Press BACKSPACE to toggle delete <=> tail mode")
+    print("Press ESC or Ctrl+C to end menu")
     exit(0)
 
 
 def mode_history_menu():
-    (terminal_col, terminal_lines) = shutil.get_terminal_size(fallback=(80, 25))
-    maxlines = min(len(HISTORY), terminal_lines-1)
-    print_history_menu(maxlines, terminal_col)
+    print_history_menu()
     # signal.signal(signal.SIGWINCH, handle_terminal_resize)
 
-    while True:                             # read user choice
+    delete_mode = False
+    currentPrompt = TAILCMD+"..."
+    while True:                                     # read user choice
+        print("\r"+currentPrompt, end="")
+        sys.stdout.flush()
         choice = _getch()
-        if choice == '\x03':                # CTRL+C ^C
+        if choice == '\x03' or choice == '\x1b':                        # CTRL+C ^C  or ESC
             exit(0)
+
+        if choice == '\x7f':                        # Backspace
+            print('\x08'*(len(currentPrompt)+1), end="")
+            delete_mode = not delete_mode
+            if delete_mode:
+                currentPrompt = 'Delete... '
+            else:
+                currentPrompt = TAILCMD+"..."
+            continue
         choiceindex = KEYS.find(choice)
         if 0 <= choiceindex < len(HISTORY):
             logfile = HISTORY[choiceindex]
-            tail_file(logfile)
-            break
-    exit(0)
+            if delete_mode:
+                print(logfile)
+                del HISTORY[choiceindex]
+                save_history_to_file()
+                print_history_menu()
+            else:
+                print("\n")
+                tail_file(logfile)
+                exit(0)
+
 
 
 def mode_new_file():
@@ -125,6 +146,8 @@ def mode_new_file():
     if os.path.isfile(logfile):
         logfile = os.path.abspath(logfile)
         tail_file(logfile)
+    else:
+        print("File not found: "+logfile)
     exit(0)
 
 

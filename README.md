@@ -17,7 +17,10 @@ Remembers last "x" files in ~/.tailor
 
 ### tailor
 If called without any parameters, tailor presents a last-recently-used menu with the last files sent to tailor. 
-Press letter in front of file name to ```tail -F``` this file.
+
+* Press letter in front of file name to ```tail -F``` this file
+* Press "Backspace" to toggle tail <=> delete mode. Delete mode allows to delete a line from menu
+* Press ESC or Ctrl+C to end tailor's menu mode
 
 Example:
 
@@ -26,4 +29,3 @@ Example:
     [1] /var/log/apache2/other_vhosts_access.log
     [2] /var/log/apache2/error.log
     [3] /var/log/supervisor/supervisord.log
-
