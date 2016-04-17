@@ -129,13 +129,13 @@ def mode_history_menu():
         choiceindex = KEYS.find(choice)
         if 0 <= choiceindex < len(HISTORY):
             logfile = HISTORY[choiceindex]
+            print(logfile)
+            print("\n")
             if delete_mode:
-                print(logfile)
                 del HISTORY[choiceindex]
                 save_history_to_file()
                 print_history_menu()
             else:
-                print("\n")
                 tail_file(logfile)
                 exit(0)
 

@@ -4,9 +4,9 @@ A wrapper for ```tail -F``` that keeps a list of the last used files and allows 
 ## Further Features
 * Respects terminal width & height (but only once at launch time! Not dynamically)
 * If access to file is not granted, tries to 'sudo tail -F'
-* Sorts last used file to top of list
 * File pathes are normalized and duplicates are removed on every call
 * Files are sorted "last used to top"
+
 
 ## Usage
 ### tailor [-h | --help]
