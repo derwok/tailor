@@ -12,10 +12,10 @@ import shutil
 import signal
 import time
 
-VERSION = "0.3"
+VERSION = "0.4"
 CONFIGFILE = expanduser("~")+"/.tailor"
 TAILCMD = "tail -F"
-KEYS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+KEYS = "1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 HISTORYMAX = len(KEYS)
 HISTORY = []
 
@@ -126,19 +126,22 @@ def mode_history_menu():
             else:
                 currentPrompt = TAILCMD+"..."
             continue
-        choiceindex = KEYS.find(choice)
-        if 0 <= choiceindex < len(HISTORY):
-            logfile = HISTORY[choiceindex]
-            print(logfile)
-            print("\n")
-            if delete_mode:
-                del HISTORY[choiceindex]
-                save_history_to_file()
-                print_history_menu()
-            else:
-                tail_file(logfile)
-                exit(0)
+        mode_history_no_menu(choice, delete_mode)
 
+
+def mode_history_no_menu(choice, delete_mode):
+    choiceindex = KEYS.find(choice)
+    if 0 <= choiceindex < len(HISTORY):
+        logfile = HISTORY[choiceindex]
+        print(">>> "+logfile)
+        print("\n")
+        if delete_mode:
+            del HISTORY[choiceindex]
+            save_history_to_file()
+            print_history_menu()
+        else:
+            tail_file(logfile)
+            exit(0)
 
 
 def mode_new_file():
@@ -161,10 +164,13 @@ def mode_new_file():
 # -------- MAIN ---------------
 read_history_from_file()
 
-if len(sys.argv) == 1:
+if len(sys.argv) == 1:  # no command line param
     mode_history_menu()
 
 if len(sys.argv) == 2 and (sys.argv[1] == "-h" or sys.argv[1] == "--help"):
     mode_help()
+
+if len(sys.argv) == 2 and (len(sys.argv[1]) == 1):      # one commandline param, exactly one char.
+    mode_history_no_menu(sys.argv[1], False)    # exits, if valid index, drops to next command if not
 
 mode_new_file()
