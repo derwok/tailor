@@ -72,7 +72,11 @@ def trim_to_col(line, terminal_col):
 
 
 def print_history_menu():
-    (terminal_col, terminal_lines) = shutil.get_terminal_size(fallback=(80, 25))
+    try:
+        (terminal_col, terminal_lines) = shutil.get_terminal_size(fallback=(80, 25))
+    except AttributeError:
+        (terminal_col, terminal_lines) = (80, 25);
+
     maxlines = min(len(HISTORY), terminal_lines-1)
     if maxlines <= 0:
         print("Error: No files in history yet or your terminal has too few lines.")
