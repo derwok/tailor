@@ -14,7 +14,7 @@ import time
 
 VERSION = "0.4"
 CONFIGFILE = expanduser("~")+"/.tailor"
-TAILCMD = "tail -F"
+TAILCMD = "tail -n 100 -F"
 KEYS = "1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 HISTORYMAX = len(KEYS)
 HISTORY = []
